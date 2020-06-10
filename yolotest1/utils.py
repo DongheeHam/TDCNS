@@ -12,6 +12,9 @@ def getUrl(name):
 def getPoligon(name, height, width):
     if name=="전농":
         return np.array([[450, height], [450, 170], [650, 180], [900, height]])
+    elif name=="Sample.avi":
+        return np.array([[90, 370], [140, 160], [360, 35], [520, 35], [700, 160], [width, 90]])
+
 
 def getMainFrame(name, frame, height, width):
     # create a zero array

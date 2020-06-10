@@ -142,19 +142,22 @@ if __name__ == '__main__':
 				if width is None or height is None:
 					height, width = frame.shape[:2]
 
-				frame, _, _, _, _ = infer_image(net, layer_names, height, width, frame, frame, colors, labels, FLAGS)
+				frame, _, _, _, _ = infer_image(net, layer_names, height, width,
+												frame, frame, colors, labels, FLAGS)
 
-				if writer is None:
-					# Initialize the video writer
-					fourcc = cv.VideoWriter_fourcc(*"MJPG")
-					writer = cv.VideoWriter(FLAGS.video_output_path, fourcc, 30, 
-						            (frame.shape[1], frame.shape[0]), True)
+				# if writer is None:
+				# 	# Initialize the video writer
+				# 	fourcc = cv.VideoWriter_fourcc(*"MJPG")
+				# 	writer = cv.VideoWriter(FLAGS.video_output_path, fourcc, 30,
+				# 		            (frame.shape[1], frame.shape[0]), True)
+				#writer.write(frame)
+				cv.imshow('stream', frame)
 
-
-				writer.write(frame)
+				if cv.waitKey(1) & 0xFF == ord('q'):
+					break
 
 			print ("[INFO] Cleaning up...")
-			writer.release()
+			#writer.release()
 			vid.release()
 
 
@@ -176,15 +179,11 @@ if __name__ == '__main__':
 			if count == 0:
 
 				frame, boxes, confidences, classids, idxs = infer_image(net, layer_names, \
- \
 													height, width, frame, frame, colors, labels, FLAGS)
-
 				count += 1
 
 			else:
-
 				frame, boxes, confidences, classids, idxs = infer_image(net, layer_names, \
- \
 													height, width, frame, frame, colors, labels, FLAGS,
 													boxes, confidences, classids, idxs, infer=False)
 

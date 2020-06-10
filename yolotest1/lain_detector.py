@@ -2,11 +2,25 @@ import numpy as np
 import argparse
 import cv2 as cv
 import matplotlib.pyplot as plt
+import argparse
 
 if __name__ == '__main__':
-    # load img
-    #image=cv.imread('picture/load1.png')
-    cap = cv.VideoCapture('rtmp://210.179.218.52/live/130.stream')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--file',
+                        type=str,
+                        default='Sample1.avi')
+    parser.add_argument('-p', '--path',
+                        type=str,
+                        default='./picture/')
+    parser.add_argument('-st', '--stream',
+                        type=str)
+    FLAGS, unparsed = parser.parse_known_args()
+    if FLAGS.file:
+        cap = cv.VideoCapture(FLAGS.path + FLAGS.file)
+    elif FLAGS.stream:
+        cap = cv.VideoCapture(FLAGS.stream)
+
+
     ret, image = cap.read()
     height, width = image.shape[:2]
     print(height, width)
@@ -39,6 +53,6 @@ if __name__ == '__main__':
     #     cv.line(dmy, (x1, y1), (x2, y2), (255, 0, 0), 3)
     print(image.shape)
     plt.figure(figsize=(10, 10))
-    plt.imshow(img)
+    plt.imshow(image)
     plt.show()
 
