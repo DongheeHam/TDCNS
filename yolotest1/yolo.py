@@ -37,6 +37,10 @@ if __name__ == '__main__':
 		type=str,
 		help='The path to the video file')
 
+	parser.add_argument('-p', '--path',
+						type=bool, default=True,
+						help='The path to the video file')
+
 	parser.add_argument('-st', '--stream-path',
 		type=str,
 		help='The path to the video file')
@@ -124,7 +128,11 @@ if __name__ == '__main__':
 	elif FLAGS.video_path:
 		# Read the video
 		try:
-			vid = cv.VideoCapture(FLAGS.video_path)
+			if FLAGS.path:
+				path = "./picture/"+FLAGS.video_path
+			else:
+				path = FLAGS.video_path
+			vid = cv.VideoCapture(path)
 			height, width = None, None
 			writer = None
 		except:
@@ -141,9 +149,9 @@ if __name__ == '__main__':
 
 				if width is None or height is None:
 					height, width = frame.shape[:2]
-
+				main = getMainFrame(FLAGS.video_path, frame, height, width)
 				frame, _, _, _, _ = infer_image(net, layer_names, height, width,
-												frame, frame, colors, labels, FLAGS)
+												main, frame, colors, labels, FLAGS)
 
 				# if writer is None:
 				# 	# Initialize the video writer
@@ -151,7 +159,7 @@ if __name__ == '__main__':
 				# 	writer = cv.VideoWriter(FLAGS.video_output_path, fourcc, 30,
 				# 		            (frame.shape[1], frame.shape[0]), True)
 				#writer.write(frame)
-				cv.imshow('stream', frame)
+				cv.imshow('video', frame)
 
 				if cv.waitKey(1) & 0xFF == ord('q'):
 					break
@@ -164,15 +172,10 @@ if __name__ == '__main__':
 	elif FLAGS.stream_path:
 
 		# Infer real-time on webcam
-
 		count = 0
-
 		vid = cv.VideoCapture(FLAGS.stream_path)
-
 		while True:
-
 			_, frame = vid.read()
-			print(frame.shape)
 
 			height, width = frame.shape[:2]
 
@@ -199,11 +202,8 @@ if __name__ == '__main__':
 		cv.destroyAllWindows()
 	elif FLAGS.name:
 		count = 0
-
 		url = getUrl(FLAGS.name)
-
 		vid = cv.VideoCapture(url)
-
 		# _, frame = vid.read()
 		# height, width = frame.shape[:2]
 		# main = getMainFrame(FLAGS.name, frame, height, width)

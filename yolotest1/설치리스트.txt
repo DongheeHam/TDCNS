@@ -1,2 +1,5 @@
 python 3.7
-pip install
+pip install numpy
+pip install opencv-python
+pip install matplotlib
+pip install pandas
