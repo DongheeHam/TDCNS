@@ -5,7 +5,7 @@ import subprocess
 import time
 import os
 from yolo_utils import infer_image, show_image
-from utils import getUrl, getMainFrame
+from utils import getUrl, getMainFrame, getDtc, getLdtc
 
 FLAGS = []
 
@@ -29,10 +29,6 @@ if __name__ == '__main__':
 		default='./yolov3-coco/yolov3.cfg',
 		help='Path to the configuration file for the YOLOv3 model.')
 
-	parser.add_argument('-i', '--image-path',
-		type=str,
-		help='The path to the image file')
-
 	parser.add_argument('-v', '--video-path',
 		type=str,
 		help='The path to the video file')
@@ -44,6 +40,11 @@ if __name__ == '__main__':
 	parser.add_argument('-st', '--stream-path',
 		type=str,
 		help='The path to the video file')
+
+	# 객체인식은 진입로(road)별로 진행되며 road 고유번호를 필수로 입력해야 한다.
+	# road 번호를 토대로 동작함.
+	parser.add_argument('-r', '--road-number',
+						type=int)
 
 	parser.add_argument('-vo', '--video-output-path',
 		type=str,
@@ -106,26 +107,8 @@ if __name__ == '__main__':
 
 	print(layer_names)
 
-	# If both image and video files are given then raise error
-	if FLAGS.image_path is None and FLAGS.video_path is None:
-	    print ('Neither path to an image or path to video provided')
-	    print ('Starting Inference on Webcam')
 
-	# Do inference with given image
-	if FLAGS.image_path:
-		# Read the image
-		try:
-			img = cv.imread(FLAGS.image_path)
-			height, width = img.shape[:2]
-		except:
-			raise 'Image cannot be loaded!\n\
-                               Please check the path provided!'
-
-		finally:
-			img, _, _, _, _ = infer_image(net, layer_names, height, width, img, img, colors, labels, FLAGS)
-			show_image(img)
-
-	elif FLAGS.video_path:
+	if FLAGS.video_path:
 		# Read the video
 		try:
 			if FLAGS.path:
@@ -136,8 +119,7 @@ if __name__ == '__main__':
 			height, width = None, None
 			writer = None
 		except:
-			raise 'Video cannot be loaded!\n\
-                               Please check the path provided!'
+			raise Exception('Video cannot be loaded! Please check the path provided!')
 
 		finally:
 			while True:
@@ -146,12 +128,21 @@ if __name__ == '__main__':
 			    # Checking if the complete video is read
 				if not grabbed:
 					break
-
+				lanes = getLdtc(FLAGS.video_path)
 				if width is None or height is None:
 					height, width = frame.shape[:2]
 				main = getMainFrame(FLAGS.video_path, frame, height, width)
 				frame, _, _, _, _ = infer_image(net, layer_names, height, width,
-												main, frame, colors, labels, FLAGS)
+												main, frame, colors, labels, FLAGS, lanes=lanes)
+
+				# dtc그리기
+				area = getDtc(FLAGS.video_path, height, width)
+				print("area : ",area)
+				cv.polylines(frame,[area],True,(255,0,0),1)
+
+				# ldtc그리기
+				for lane in lanes:
+					cv.polylines(frame, [lane], True, (0, 255, 0), 1)
 
 				# if writer is None:
 				# 	# Initialize the video writer
@@ -220,6 +211,11 @@ if __name__ == '__main__':
 				frame, boxes, confidences, classids, idxs = infer_image(net, layer_names, \
 		    						height, width, frame, frame, colors, labels, FLAGS, boxes, confidences, classids, idxs, infer=False)
 				count = (count + 1) % 6
+
+			area = getDtc(FLAGS.name, height, width)
+			print("area : ", area)
+			if len(area) != 0:
+				cv.polylines(frame, [area], True, (255, 0, 0), 1)
 
 			cv.imshow('stream', frame)
 

@@ -2,7 +2,6 @@ import numpy as np
 import argparse
 import cv2 as cv
 import matplotlib.pyplot as plt
-import argparse
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -25,10 +25,11 @@ def draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors, label
             text = "{}: {:4f}".format(labels[classids[i]], confidences[i])
             cv.putText(img, text, (x, y-5), cv.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
+
     return img
 
 #def generate_boxes_confidences_classids(outs, height, width, tconf):
-def generate_boxes_confidences_classids(outs, height, width, tconf, labels):
+def generate_boxes_confidences_classids(outs, height, width, tconf, labels, lanes=None):
     boxes = []
     confidences = []
     classids = []
@@ -53,7 +54,14 @@ def generate_boxes_confidences_classids(outs, height, width, tconf, labels):
                 # and the left corner of the bounding box
                 x = int(centerX - (bwidth / 2))
                 y = int(centerY - (bheight / 2))
-                print("%s - x : %d, y : %d" % (labels[classid], centerX, centerY))
+                #print("%s - x : %d, y : %d" % (labels[classid], centerX, centerY))
+
+                if lanes!=None:
+                    for lane in lanes:
+                        inside=cv.pointPolygonTest(lane,(x, y),True)
+                        print("inside = ",inside)
+
+
                 # Append to list
                 boxes.append([x, y, int(bwidth), int(bheight)])
                 confidences.append(float(confidence))
@@ -62,7 +70,7 @@ def generate_boxes_confidences_classids(outs, height, width, tconf, labels):
     return boxes, confidences, classids
 
 def infer_image(net, layer_names, height, width, main, img, colors, labels, FLAGS,
-            boxes=None, confidences=None, classids=None, idxs=None, infer=True):
+            boxes=None, confidences=None, classids=None, idxs=None, infer=True, lanes=None):
     
     if infer:
         # 입력 이미지에서 블롭 구성
@@ -82,7 +90,7 @@ def infer_image(net, layer_names, height, width, main, img, colors, labels, FLAG
 
         
         # boxes, confidences, and classIDs 생성
-        boxes, confidences, classids = generate_boxes_confidences_classids(outs, height, width, FLAGS.confidence, labels)
+        boxes, confidences, classids = generate_boxes_confidences_classids(outs, height, width, FLAGS.confidence, labels,lanes=lanes)
         
         # 겹치는 경계 상자 억제를 위해 최대값이 아닌 억제 적용
         idxs = cv.dnn.NMSBoxes(boxes, confidences, FLAGS.confidence, FLAGS.threshold)
