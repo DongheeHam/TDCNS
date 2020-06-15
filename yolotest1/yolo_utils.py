@@ -9,7 +9,7 @@ def show_image(img):
     cv.imshow("Image", img)
     cv.waitKey(0)
 
-def draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors, labels):
+def draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors, labels, car_in_lane):
     # If there are any detections
     if len(idxs) > 0:
         for i in idxs.flatten():
@@ -21,24 +21,28 @@ def draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors, label
             color = [int(c) for c in colors[classids[i]]]
 
             # Draw the bounding box rectangle and label on the image
-            cv.rectangle(img, (x, y), (x+w, y+h), color, 2)
-            text = "{}: {:4f}".format(labels[classids[i]], confidences[i])
-            cv.putText(img, text, (x, y-5), cv.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+            cv.rectangle(img, (x, y), (x+w, y+h), color, 1)
+            text = "{}".format(labels[classids[i]])
+            cv.putText(img, text, (x, y-5), cv.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+
+
+    for i, car in enumerate(car_in_lane):
+        car_in_lane_text = f"lane({i + 1}) : {len(car)}"
+        cv.putText(img, car_in_lane_text, (10, 20 + (i * 20)), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
 
 
     return img
 
 #def generate_boxes_confidences_classids(outs, height, width, tconf):
-def generate_boxes_confidences_classids(outs, height, width, tconf, labels, lanes=None):
+def generate_boxes_confidences_classids(outs, height, width, tconf, labels, ldtcs=None):
     boxes = []
     confidences = []
     classids = []
-
+    car_in_lane = [[] for i in range(len(ldtcs))]
     for out in outs:
         for detection in out:
-            #print (detection)
             #a = input('GO!')
-            
+
             # Get the scores, classid, and the confidence of the prediction
             scores = detection[5:]
             classid = np.argmax(scores)
@@ -54,12 +58,17 @@ def generate_boxes_confidences_classids(outs, height, width, tconf, labels, lane
                 # and the left corner of the bounding box
                 x = int(centerX - (bwidth / 2))
                 y = int(centerY - (bheight / 2))
+
                 #print("%s - x : %d, y : %d" % (labels[classid], centerX, centerY))
 
-                if lanes!=None:
-                    for lane in lanes:
-                        inside=cv.pointPolygonTest(lane,(x, y),True)
-                        print("inside = ",inside)
+                for i,ldtc in enumerate(ldtcs,0):
+                    inside_pixel=cv.pointPolygonTest(ldtc,(centerX, int(centerY + (bheight / 2))),True)
+                    if inside_pixel>=0:
+                        # 순서대로 bycycle, car, motorbike, bus, truck
+                        if classid==1 or classid==2 or classid==3 or classid==5 or classid==8:
+                            last_data=car_in_lane[i]
+                            car_in_lane[i].append(classid)
+
 
 
                 # Append to list
@@ -67,10 +76,10 @@ def generate_boxes_confidences_classids(outs, height, width, tconf, labels, lane
                 confidences.append(float(confidence))
                 classids.append(classid)
 
-    return boxes, confidences, classids
+    return boxes, confidences, classids, car_in_lane
 
 def infer_image(net, layer_names, height, width, main, img, colors, labels, FLAGS,
-            boxes=None, confidences=None, classids=None, idxs=None, infer=True, lanes=None):
+            boxes=None, confidences=None, classids=None, idxs=None, infer=True, ldtcs=None):
     
     if infer:
         # 입력 이미지에서 블롭 구성
@@ -90,15 +99,15 @@ def infer_image(net, layer_names, height, width, main, img, colors, labels, FLAG
 
         
         # boxes, confidences, and classIDs 생성
-        boxes, confidences, classids = generate_boxes_confidences_classids(outs, height, width, FLAGS.confidence, labels,lanes=lanes)
+        boxes, confidences, classids, car_in_lane = generate_boxes_confidences_classids(outs, height, width, FLAGS.confidence, labels,ldtcs=ldtcs)
         
         # 겹치는 경계 상자 억제를 위해 최대값이 아닌 억제 적용
         idxs = cv.dnn.NMSBoxes(boxes, confidences, FLAGS.confidence, FLAGS.threshold)
 
     if boxes is None or confidences is None or idxs is None or classids is None:
-        raise '[ERROR] Required variables are set to None before drawing boxes on images.'
+        raise Exception('[ERROR] Required variables are set to None before drawing boxes on images.')
         
     # Draw labels and boxes on the image
-    img = draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors, labels)
+    img = draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors, labels, car_in_lane)
 
     return img, boxes, confidences, classids, idxs

@@ -6,7 +6,7 @@ import time
 import os
 from yolo_utils import infer_image, show_image
 from utils import getUrl, getMainFrame, getDtc, getLdtc
-
+import matplotlib.pyplot as plt
 FLAGS = []
 
 if __name__ == '__main__':
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
 	parser.add_argument('-c', '--confidence',
 		type=float,
-		default=0.5,
+		default=0.45,
 		help='The model will reject boundaries which has a \
 				probabiity less than the confidence value. \
 				default: 0.5')
@@ -82,8 +82,7 @@ if __name__ == '__main__':
 		help='Show the time taken to infer each image.')
 
 	parser.add_argument('-n', '--name',
-						type=str,
-						default="전")
+						type=str)
 
 	FLAGS, unparsed = parser.parse_known_args()
 
@@ -105,8 +104,9 @@ if __name__ == '__main__':
 	layer_names = net.getLayerNames()
 	layer_names = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
-	print(layer_names)
-
+	# road 정보를 불러오는 로직 (차후 서버와 통신)
+	ldtcs = getLdtc(FLAGS.road_number)
+	car_in_lane=np.zeros(len(ldtcs))
 
 	if FLAGS.video_path:
 		# Read the video
@@ -120,29 +120,27 @@ if __name__ == '__main__':
 			writer = None
 		except:
 			raise Exception('Video cannot be loaded! Please check the path provided!')
-
 		finally:
+			frame_index = 0
 			while True:
+				frame_index += 1
 				grabbed, frame = vid.read()
-
 			    # Checking if the complete video is read
 				if not grabbed:
 					break
-				lanes = getLdtc(FLAGS.video_path)
 				if width is None or height is None:
 					height, width = frame.shape[:2]
 				main = getMainFrame(FLAGS.video_path, frame, height, width)
 				frame, _, _, _, _ = infer_image(net, layer_names, height, width,
-												main, frame, colors, labels, FLAGS, lanes=lanes)
+												main, frame, colors, labels, FLAGS, ldtcs=ldtcs)
 
 				# dtc그리기
-				area = getDtc(FLAGS.video_path, height, width)
-				print("area : ",area)
+				area = getDtc(FLAGS.video_path)
 				cv.polylines(frame,[area],True,(255,0,0),1)
 
 				# ldtc그리기
-				for lane in lanes:
-					cv.polylines(frame, [lane], True, (0, 255, 0), 1)
+				for ldtc in ldtcs:
+					cv.polylines(frame, [ldtc], True, (0, 255, 0), 1)
 
 				# if writer is None:
 				# 	# Initialize the video writer
@@ -151,7 +149,8 @@ if __name__ == '__main__':
 				# 		            (frame.shape[1], frame.shape[0]), True)
 				#writer.write(frame)
 				cv.imshow('video', frame)
-
+				# plt.imshow(frame)
+				# plt.show()
 				if cv.waitKey(1) & 0xFF == ord('q'):
 					break
 
@@ -212,8 +211,7 @@ if __name__ == '__main__':
 		    						height, width, frame, frame, colors, labels, FLAGS, boxes, confidences, classids, idxs, infer=False)
 				count = (count + 1) % 6
 
-			area = getDtc(FLAGS.name, height, width)
-			print("area : ", area)
+			area = getDtc(FLAGS.name)
 			if len(area) != 0:
 				cv.polylines(frame, [area], True, (255, 0, 0), 1)
 

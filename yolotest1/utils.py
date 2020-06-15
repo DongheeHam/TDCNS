@@ -9,15 +9,16 @@ def getUrl(name):
         data = json.load(json_file)
     return data[name]
 
-def getDtc(name, height, width): # 교차로에서 인식할 부분 다각형 형테의 ndarray (나중엔 서버로 받아올 정보이나 임시로 이렇게 함)
+def getDtc(name): # 교차로에서 인식할 부분 다각형 형테의 ndarray (나중엔 서버로 받아올 정보이나 임시로 이렇게 함)
     if name=="전농":
-        return np.array([[450, height], [450, 170], [650, 180], [900, height]], np.int32)
+        return np.array([[450, 720], [450, 170], [650, 180], [900, 720]], np.int32)
     elif name=="Sample1.avi" or name=="Sample2.avi" or name=="Sample3.avi":
-        return np.array([[90, 350], [140, 160], [360, 35], [520, 35], [700, 160], [width, 350]], np.int32)
+        return np.array([[90, 350], [140, 160], [360, 35], [520, 35], [700, 160], [912, 350]], np.int32)
     else:
         return np.array([])
-def getLdtc(name):
-    if name=="Sample1.avi" or name=="Sample2.avi" or name=="Sample3.avi":
+
+def getLdtc(road_number):
+    if road_number==1:
         result=[]
         result.append(np.array( [[783, 253], [680, 163], [612, 155], [683, 255]] ))
         result.append(np.array([[581, 255], [531, 106], [558, 113], [615, 161], [682, 257]]))
@@ -35,8 +36,7 @@ def getMainFrame(name, frame, height, width):
     # create a zero array
     stencil = np.zeros_like(frame[:, :, 0])
     # 다각형 좌표 지정
-    polygon = getDtc(name, height, width)
-    print(polygon)
+    polygon = getDtc(name)
     # 다각형 채우기
     cv.fillConvexPoly(stencil, polygon, 1)
     # 합치기
