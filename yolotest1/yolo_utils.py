@@ -9,7 +9,7 @@ def show_image(img):
     cv.imshow("Image", img)
     cv.waitKey(0)
 
-def draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors, labels, car_in_lane):
+def draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors, labels, car_in_lane, last_data):
     # If there are any detections
     if len(idxs) > 0:
         for i in idxs.flatten():
@@ -61,13 +61,16 @@ def generate_boxes_confidences_classids(outs, height, width, tconf, labels, ldtc
 
                 #print("%s - x : %d, y : %d" % (labels[classid], centerX, centerY))
 
+                #objectX, objectY는 박스의 중앙 아래를 의미하며 차량인식좌표로 사용됨
+                objectX = centerX
+                objectY = int(centerY + (bheight / 2))
                 for i,ldtc in enumerate(ldtcs,0):
-                    inside_pixel=cv.pointPolygonTest(ldtc,(centerX, int(centerY + (bheight / 2))),True)
+                    inside_pixel=cv.pointPolygonTest(ldtc,(objectX, objectY),True)
                     if inside_pixel>=0:
                         # 순서대로 bycycle, car, motorbike, bus, truck
                         if classid==1 or classid==2 or classid==3 or classid==5 or classid==8:
                             last_data=car_in_lane[i]
-                            car_in_lane[i].append(classid)
+                            car_in_lane[i].append((classid, objectX, objectY))
 
 
 
@@ -78,7 +81,7 @@ def generate_boxes_confidences_classids(outs, height, width, tconf, labels, ldtc
 
     return boxes, confidences, classids, car_in_lane
 
-def infer_image(net, layer_names, height, width, main, img, colors, labels, FLAGS,
+def infer_image(net, layer_names, height, width, main, img, colors, labels, FLAGS, last_data,
             boxes=None, confidences=None, classids=None, idxs=None, infer=True, ldtcs=None):
     
     if infer:
@@ -108,6 +111,6 @@ def infer_image(net, layer_names, height, width, main, img, colors, labels, FLAG
         raise Exception('[ERROR] Required variables are set to None before drawing boxes on images.')
         
     # Draw labels and boxes on the image
-    img = draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors, labels, car_in_lane)
+    img = draw_labels_and_boxes(img, boxes, confidences, classids, idxs, colors, labels, car_in_lane, last_data)
 
-    return img, boxes, confidences, classids, idxs
+    return img, boxes, confidences, classids, idxs, car_in_lane

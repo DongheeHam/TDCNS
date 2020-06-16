@@ -107,7 +107,7 @@ if __name__ == '__main__':
 	# road 정보를 불러오는 로직 (차후 서버와 통신)
 	ldtcs = getLdtc(FLAGS.road_number)
 	car_in_lane=np.zeros(len(ldtcs))
-
+	last_data=None
 	if FLAGS.video_path:
 		# Read the video
 		try:
@@ -122,6 +122,7 @@ if __name__ == '__main__':
 			raise Exception('Video cannot be loaded! Please check the path provided!')
 		finally:
 			frame_index = 0
+			count = 0
 			while True:
 				frame_index += 1
 				grabbed, frame = vid.read()
@@ -131,9 +132,16 @@ if __name__ == '__main__':
 				if width is None or height is None:
 					height, width = frame.shape[:2]
 				main = getMainFrame(FLAGS.video_path, frame, height, width)
-				frame, _, _, _, _ = infer_image(net, layer_names, height, width,
-												main, frame, colors, labels, FLAGS, ldtcs=ldtcs)
-
+				if count == 0:
+					frame, boxes, confidences, classids, idxs, car_in_lane = infer_image(net, layer_names, \
+																			height, width, main, frame, colors, labels, FLAGS, last_data , ldtcs=ldtcs)
+					count += 1
+				else:
+					frame, boxes, confidences, classids, idxs, car_in_lane = infer_image(net, layer_names, \
+																			height, width, main, frame, colors, labels,FLAGS,
+																			boxes, confidences, classids, idxs, infer=False, ldtcs=ldtcs)
+					count = (count + 1) % 6
+				last_data=car_in_lane
 				# dtc그리기
 				area = getDtc(FLAGS.video_path)
 				cv.polylines(frame,[area],True,(255,0,0),1)
