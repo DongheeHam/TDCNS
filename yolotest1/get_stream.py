@@ -1,7 +1,6 @@
 import cv2
 import argparse
-#cap = cv2.VideoCapture('http://218.38.40.240:10515/?action=stream')
-#cap = cv2.VideoCapture('rtmp://210.179.218.51/live/238.stream')
+
 cap = cv2.VideoCapture('rtmp://210.179.218.52/live/140.stream')
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()

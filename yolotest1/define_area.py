@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2 as cv
 import argparse
+import requests
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file',
@@ -36,3 +37,4 @@ def onclick(event):
 plt.gcf().canvas.mpl_connect('button_press_event', onclick)
 
 plt.show()
+

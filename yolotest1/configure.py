@@ -34,5 +34,8 @@ def getLdtcsArea(road_number):
         result.append(np.array( [[167, 264], [391, 58], [426, 62], [270, 257]] ))
         result.append(np.array( [[66, 293], [16, 284], [18, 244], [211, 141], [257, 137], [330, 67], [378, 67], [281, 163], [158, 225], [69, 291]] ))
         return result
+    elif road_number==2:
+        result=[]
+
     else:
         return [np.array([])]
