@@ -28,11 +28,13 @@ example={
             [122, 122],
             [233, 233],
             [344, 344],
-            [455, 455]
+            [4455, 4455]
         ]
     ]
 }
-URL = 'http://localhost:8080/rest/setLdtc.json'
-response = requests.post(URL, data=example)
+headers = {'Content-Type': 'application/json; charset=utf-8'}
+example2 = {"a":"aaaa","b":"bbbb"}
+URL = 'http://localhost:8080/rest/setDtc.json'
+response = requests.post(URL, headers=headers, params=example2, data=json.dumps(example))
 print("status : ",response.status_code)
 print("text : ",response.text)
