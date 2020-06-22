@@ -80,7 +80,7 @@ def parse():
     # road 번호를 토대로 동작함.
     parser.add_argument('-r', '--road-number', type=int)
 
-    parser.add_argument('-ic', '--infer-cycle', type=int, default=6)
+    parser.add_argument('-ic', '--infer-cycle', type=int, default=2)
 
     parser.add_argument('-vo', '--video-output-path',
                         type=str,

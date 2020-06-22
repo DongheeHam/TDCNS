@@ -5,7 +5,7 @@ import subprocess
 import time
 import os
 from utils import parse
-from configure import getDtcArea, getLdtcsArea
+from configure import getDtcArea, getLdtcsArea, getArea
 from detector import Detector
 from data_processing import DataProcessing
 
@@ -25,8 +25,9 @@ if __name__ == '__main__':
 	# net 안에서 무슨일이 일어나는지 모르겠지만 layer_namse는 이렇게 생겼음 ['yolo_82', 'yolo_94', 'yolo_106']
 
 	# road 정보 불러오기
-	dtc = getDtcArea(FLAGS.road_number)
-	ldtcs = getLdtcsArea(FLAGS.road_number)
+	#dtc = getDtcArea(FLAGS.road_number)
+	#ldtcs = getLdtcsArea(FLAGS.road_number)
+	dtc, ldtcs = getArea(FLAGS.road_number)
 
 	# opencv videoCapture
 
@@ -47,6 +48,7 @@ if __name__ == '__main__':
 						labels=labels
 						)
 	dataProcessing = DataProcessing()
+	dataProcessing.dataStatistics(FLAGS.interval_time)
 
 	frame_index = 0
 	count = 0
@@ -68,13 +70,18 @@ if __name__ == '__main__':
 			frame = detector.infer_image(frame, infer=False)
 			count = (count + 1) % FLAGS.infer_cycle
 
-		# 데이터 가공(미구현)
-		processed_data = dataProcessing.dataProcess(detector.last_car_in_lane)
+		print(detector.last_car_in_lane)
+
+		# 데이터 가공
+
+		queue_avg = dataProcessing.getQueueAvg(detector.last_car_in_lane)
+		dataProcessing.interval(FLAGS.interval_time)
 
 		# 화면 출력
 		detector.show(frame)
 
 		if cv.waitKey(1) & 0xFF == ord('q'):
 			break
+		frame_index+=1
 
 	vid.release()

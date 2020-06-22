@@ -35,6 +35,6 @@ example={
 headers = {'Content-Type': 'application/json; charset=utf-8'}
 example2 = {"a":"aaaa","b":"bbbb"}
 URL = 'http://localhost:8080/rest/setDtc.json'
-response = requests.post(URL, headers=headers, params=example2, data=json.dumps(example))
+response = requests.post(URL, headers=headers, data=json.dumps(example))
 print("status : ",response.status_code)
 print("text : ",response.text)

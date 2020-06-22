@@ -8,6 +8,8 @@ import argparse
 import copy
 import requests
 
+import json
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file',
                     type=str,
@@ -39,6 +41,9 @@ button = Button(resetax, 'send', color=axcolor, hovercolor='0.5')
 
 type="dtc"
 def reset(event):
+    global lines
+    if lines[-1]==[]:
+        del lines[-1]
     headers = {'Content-Type': 'application/json; charset=utf-8'}
     if type=="dtc":
         url='http://localhost:8080/rest/setDtc.json'
@@ -48,7 +53,7 @@ def reset(event):
         data={"rno":FLAGS.road_number,"ldtc":lines}
     print("headers : ",headers)
     print("data : ",data)
-    response = requests.post(url, headers=headers, data=data)
+    response = requests.post(url, headers=headers, data=json.dumps(data))
 def select(event):
     global type
     type = event
@@ -95,8 +100,10 @@ def onclick(event):
         ax.add_collection(lc)
         #del lines[:]
         plt.draw()
+        lines.append([])
         print(lines)
-
+        del lines[-1]
+        print(lines)
         print("Result = np.array(",points,")")
         del points[:]
 

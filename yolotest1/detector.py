@@ -36,7 +36,6 @@ class Detector:
 
             # 걸러낸 이미지에서 블롭 구성
             blob = cv.dnn.blobFromImage(main, 1 / 255.0, (416, 416), swapRB=True, crop=False)
-
             # YOLO 개체 탐지기의 전방 통과 수행
             self.net.setInput(blob)
 
@@ -72,17 +71,22 @@ class Detector:
         confidences = []
         classids = []
         car_in_lane = [[] for i in range(len(self.ldtcs))]
-
+        a=0
         for out in outs:
+            if a==0:
+                print(out)
+            a+=1
             for detection in out:
                 # 예측한 점수, 등급 및 신뢰도를 얻음
                 scores = detection[5:]
                 classid = np.argmax(scores)
                 confidence = scores[classid]
 
+
                 # 특정 신뢰 수준을 초과하는 예측만 고려함
                 if confidence > self.FLAGS.confidence:
                     box = detection[0:4] * np.array([self.width, self.height, self.width, self.height])
+                    print("box : ", box)
                     centerX, centerY, bwidth, bheight = box.astype('int')
 
                     # 중심 x, y 좌표를 사용하여 경계 상자의 상단 및 왼쪽 모서리를 얻음
@@ -94,16 +98,17 @@ class Detector:
                     # objectX, objectY는 박스의 중앙 아래를 의미하며 차량인식좌표로 사용됨
                     objectX = centerX
                     objectY = int(centerY + (bheight / 2))
+
                     for i, ldtc in enumerate(self.ldtcs, 0):
                         inside_pixel = cv.pointPolygonTest(ldtc, (objectX, objectY), True)
                         if inside_pixel >= 0:
                             # 순서대로 bycycle, car, motorbike, bus, truck
-                            if classid == 1 or classid == 2 or classid == 3 or classid == 5 or classid == 8:
+                            if classid == 1 or classid == 2 or classid == 3 or classid == 5 or classid == 7:
                                 last_data = car_in_lane[i]
                                 car_in_lane[i].append((classid, objectX, objectY))
 
                     # Append to list
-                    boxes.append([x, y, int(bwidth), int(bheight)])
+                    boxes.append([x, y, int(bwidth), int(bheight), objectX, objectY])
                     confidences.append(float(confidence))
                     classids.append(classid)
 
@@ -119,14 +124,14 @@ class Detector:
 
                 # Get the unique color for this class
                 color = [int(c) for c in self.colors[classids[i]]]
-
+                cv.circle(frame, (boxes[i][4], boxes[i][5]), 4,color,2)
                 # Draw the bounding box rectangle and label on the image
-                cv.rectangle(frame, (x, y), (x + w, y + h), color, 1)
+                cv.rectangle(frame, (x, y), (x + w, y + h), color, 2)
                 text = "{}".format(self.labels[classids[i]])
                 cv.putText(frame, text, (x, y - 5), cv.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
 
         for i, car in enumerate(car_in_lane):
-            car_in_lane_text = f"lane({i + 1}) : {len(car)}"
+            car_in_lane_text = f"lane({i + 1}) : {[self.labels[c] for c,_,_ in car ]}"
             cv.putText(frame, car_in_lane_text, (10, 20 + (i * 20)), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
 
         return frame

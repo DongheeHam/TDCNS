@@ -1,4 +1,22 @@
 import numpy as np
+import requests
+import json
+
+def getArea(road_number):
+    headers = {'Content-Type': 'application/json; charset=utf-8'}
+    url = 'http://localhost:8080/rest/getArea.json'
+    param = {"rno": road_number}
+    response = requests.post(url, params=param, headers=headers)
+    result = json.loads(response.text)["result"]
+    #print(result)
+
+    dtc = np.array(result["dtc"])
+    result_ldtc = result["ldtc"]
+    ldtc=[]
+    for l in result_ldtc:
+        ldtc.append(np.array(l))
+    return (dtc, ldtc)
+
 """
 get Detection Area
 - 해당 진입로(road_number)에서 차량을 인식할 부분
