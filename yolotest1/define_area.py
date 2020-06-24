@@ -101,10 +101,7 @@ def onclick(event):
         #del lines[:]
         plt.draw()
         lines.append([])
-        print(lines)
-        del lines[-1]
-        print(lines)
-        print("Result = np.array(",points,")")
+        #print("Result = np.array(",points,")")
         del points[:]
 
 plt.gcf().canvas.mpl_connect('button_press_event', onclick)

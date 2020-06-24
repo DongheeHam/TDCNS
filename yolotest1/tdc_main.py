@@ -48,7 +48,7 @@ if __name__ == '__main__':
 						labels=labels
 						)
 	dataProcessing = DataProcessing()
-	dataProcessing.dataStatistics(FLAGS.interval_time)
+	#dataProcessing.dataStatistics(FLAGS.interval_time)
 
 	frame_index = 0
 	count = 0
@@ -74,8 +74,8 @@ if __name__ == '__main__':
 
 		# 데이터 가공
 
-		queue_avg = dataProcessing.getQueueAvg(detector.last_car_in_lane)
-		dataProcessing.interval(FLAGS.interval_time)
+		#queue_avg = dataProcessing.getQueueAvg(detector.last_car_in_lane)
+		#dataProcessing.interval(FLAGS.interval_time)
 
 		# 화면 출력
 		detector.show(frame)
