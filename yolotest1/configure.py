@@ -12,11 +12,17 @@ def getArea(road_number):
 
     dtc = np.array(result["dtc"])
     result_ldtc = result["ldtc"]
+    result_counter = result["counter"]
     ldtc=[]
+    counter=[]
     for l in result_ldtc:
         ldtc.append(np.array(l))
-    return (dtc, ldtc)
+    for l in result_counter:
+        counter.append(np.array(l))
+    return (dtc, ldtc, counter)
 
+def getSizecut():
+    return 120
 """
 get Detection Area
 - 해당 진입로(road_number)에서 차량을 인식할 부분

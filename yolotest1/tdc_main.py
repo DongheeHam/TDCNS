@@ -5,7 +5,7 @@ import subprocess
 import time
 import os
 from utils import parse
-from configure import getDtcArea, getLdtcsArea, getArea
+from configure import getSizecut, getArea
 from detector import Detector
 from data_processing import DataProcessing
 
@@ -27,7 +27,8 @@ if __name__ == '__main__':
 	# road 정보 불러오기
 	#dtc = getDtcArea(FLAGS.road_number)
 	#ldtcs = getLdtcsArea(FLAGS.road_number)
-	dtc, ldtcs = getArea(FLAGS.road_number)
+	dtc, ldtcs, counter = getArea(FLAGS.road_number)
+	sizecut = getSizecut()
 
 	# opencv videoCapture
 
@@ -45,10 +46,13 @@ if __name__ == '__main__':
 						vid=vid,
 						dtc=dtc,
 						ldtcs=ldtcs,
-						labels=labels
+						counter=counter,
+						labels=labels,
+						sizecut=sizecut
 						)
-	dataProcessing = DataProcessing()
-	#dataProcessing.dataStatistics(FLAGS.interval_time)
+	dataProcessing = DataProcessing(detector=detector,
+									road_number=FLAGS.road_number)
+	dataProcessing.start_counting()
 
 	frame_index = 0
 	count = 0
@@ -57,6 +61,10 @@ if __name__ == '__main__':
 		grabbed, frame = vid.read()
 		# 비디오일 경우를 대비해 비디오 종료 체크
 		if not grabbed:
+			# 카운트 텍스트 출력
+			car_in_lane_text_ = ""
+			for i, lane in enumerate(detector.lane_count):
+				car_in_lane_text_ += f"lane {i + 1} : {len(detector.lane_count[i])} | "
 			break
 		if width is None or height is None:
 			height, width = frame.shape[:2]
@@ -70,7 +78,7 @@ if __name__ == '__main__':
 			frame = detector.infer_image(frame, infer=False)
 			count = (count + 1) % FLAGS.infer_cycle
 
-		print(detector.last_car_in_lane)
+		#print(detector.last_car_in_lane)
 
 		# 데이터 가공
 

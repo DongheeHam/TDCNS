@@ -12,8 +12,7 @@ import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file',
-                    type=str,
-                    default='Sample1.avi')
+                    type=str)
 parser.add_argument('-p', '--path',
                     type=str,
                     default='./picture/')
@@ -34,7 +33,7 @@ plt.subplots_adjust(left=0.25, bottom=0.25)
 axcolor = 'aliceblue'
 
 rax = plt.axes([0.025, 0.5, 0.15, 0.15])
-radio = RadioButtons(rax, ('dtc', 'ldtc'), active=0)
+radio = RadioButtons(rax, ('dtc', 'ldtc', 'counter'), active=0)
 
 resetax = plt.axes([0.8, 0.025, 0.1, 0.04])  # 리셋버튼 영역
 button = Button(resetax, 'send', color=axcolor, hovercolor='0.5')
@@ -48,9 +47,12 @@ def reset(event):
     if type=="dtc":
         url='http://localhost:8080/rest/setDtc.json'
         data={"rno":FLAGS.road_number,"dtc":lines[0]}
+    elif type=='counter':
+        url = 'http://localhost:8080/rest/setCounter.json'
+        data={"rno":FLAGS.road_number,"counter":lines}
     else:
         url = 'http://localhost:8080/rest/setLdtc.json'
-        data={"rno":FLAGS.road_number,"ldtc":lines}
+        data = {"rno": FLAGS.road_number, "ldtc": lines}
     print("headers : ",headers)
     print("data : ",data)
     response = requests.post(url, headers=headers, data=json.dumps(data))
