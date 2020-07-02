@@ -28,8 +28,6 @@ class Detector:
         # 라벨 색상 랜덤 초기화
         self.colors = np.random.randint(0, 255, size=(len(self.labels), 3), dtype='uint8')
 
-
-
     def setHeightAndWidth(self, height, width):
         self.height = height
         self.width = width

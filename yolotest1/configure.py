@@ -4,7 +4,7 @@ import json
 
 def getArea(road_number):
     headers = {'Content-Type': 'application/json; charset=utf-8'}
-    url = 'http://localhost:8080/rest/getArea.json'
+    url = 'http://35.224.46.11:80/rest/getArea.json'
     param = {"rno": road_number}
     response = requests.post(url, params=param, headers=headers)
     result = json.loads(response.text)["result"]

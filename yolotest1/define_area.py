@@ -45,13 +45,13 @@ def reset(event):
         del lines[-1]
     headers = {'Content-Type': 'application/json; charset=utf-8'}
     if type=="dtc":
-        url='http://localhost:8080/rest/setDtc.json'
+        url='http://35.224.46.11:80/rest/setDtc.json'
         data={"rno":FLAGS.road_number,"dtc":lines[0]}
     elif type=='counter':
-        url = 'http://localhost:8080/rest/setCounter.json'
+        url = 'http://35.224.46.11:80/rest/setCounter.json'
         data={"rno":FLAGS.road_number,"counter":lines}
     else:
-        url = 'http://localhost:8080/rest/setLdtc.json'
+        url = 'http://35.224.46.11:80/rest/setLdtc.json'
         data = {"rno": FLAGS.road_number, "ldtc": lines}
     print("headers : ",headers)
     print("data : ",data)
