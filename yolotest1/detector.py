@@ -3,12 +3,11 @@ import cv2 as cv
 import time
 
 class Detector:
-    def __init__(self, net, layer_names, FLAGS, vid, dtc, ldtcs,counter, labels,\
+    def __init__(self, net, layer_names, FLAGS, dtc, ldtcs,counter, labels,\
                  sizecut, height=None, width=None):
         self.net = net
         self.layer_names = layer_names
         self.FLAGS = FLAGS
-        self.vid = vid
         self.dtc = dtc
         self.ldtcs = ldtcs
         self.counter = counter
@@ -20,6 +19,13 @@ class Detector:
         # count 관련
         # 차선개수[대형수,소형수]
         self.lane_count = [[0,0] for _ in counter]
+
+        """
+        내가 시도했던 카운팅 알고리즘은 멈춘 차가 카운팅존에 걸쳐서 계속 카운팅되는걸 막으려고 
+        3개 frame동안 카운팅 존에 있다가 나가고 3개 프레임동안 카운팅존에 없으면 +1 카운팅하는걸 시도했는데
+        차가 나간 후 3개 프레임이 지나기 전 다음차가 들어오면 카운팅이 안되서 걍 1개프레임만 들어왔다가 나가도 카운팅
+        하게끔 해놨음
+        """
         self.last_car = [None for _ in counter]
         self.car_in_lane_counter = [0 for _ in counter]
         self.count_flag = False
@@ -43,7 +49,7 @@ class Detector:
 
     def infer_image(self, frame, infer=True):
         if infer:
-            # 입력 이미지에서 인식할 부분만 걸러냄
+            # 입력 이미지에서 인식할 부분(dtc)만 걸러냄
             main = self.getDtcFrame(frame)
 
             # 걸러낸 이미지에서 블롭 구성
@@ -61,10 +67,15 @@ class Detector:
                 print("[INFO] YOLOv3 took {:6f} seconds".format(end - start))
 
             # boxes, confidences, and classIDs 생성
-            boxes, confidences, classids, car_in_lane = self.generate_boxes_confidences_classids(outs)
+            boxes, confidences, classids = self.generate_boxes_confidences_classids(outs)
+
+
+
+            # 이번 프레임의 차선별 차량 대기열 정보를 저장할 변수 선언
+            car_in_lane = [[] for i in range(len(self.ldtcs))]
 
             # 겹치는 경계 상자 억제를 위해 최대값이 아닌 억제 적용
-            # TODO 상수를 조절해 겹친녀석을 더 확실하게 제거할 방법이 있나 연구
+            # TODO 상수를 조절해 겹친녀석을 더 확실하게 제거할 방법이 있나 연구해봐야 함
             # http://blog.naver.com/PostView.nhn?blogId=sogangori&logNo=220993971883&parentCategoryNo=6&categoryNo=&viewDate=&isShowPopularPosts=true&from=search
             idxs = cv.dnn.NMSBoxes(boxes, confidences, self.FLAGS.confidence, self.FLAGS.threshold)
 
@@ -84,7 +95,6 @@ class Detector:
         boxes = []
         confidences = []
         classids = []
-        car_in_lane = [[] for i in range(len(self.ldtcs))]
         a=0
         for out in outs:
             # if a==0:
@@ -128,14 +138,18 @@ class Detector:
         # print("last_car:",self.last_car)
         # print("car_in_lane_counter:", self.car_in_lane_counter)
         # print("lane_count:", self.lane_count)
-        return boxes, confidences, classids, car_in_lane
+        return boxes, confidences, classids
 
     def draw_labels_and_boxes(self, frame, boxes, confidences, classids, idxs, car_in_lane, infer):
         # 탐지된 객체가 있는 경우
         #print(len(idxs))
         if len(idxs) > 0:
+
+            # 각각의 차선(ldtc)별로 해당 차선에 차량이 있는지 판단하기 위함.
             for j, ldtc in enumerate(self.ldtcs, 0):
                 lane_flag=False
+
+                # 인식한 결과물 모두를 탐색함.
                 for i in idxs.flatten():
                     # Get the bounding box coordinates
                     x, y = boxes[i][0], boxes[i][1]
@@ -147,15 +161,25 @@ class Detector:
 
 
                     if infer :
+                        # 순서대로 bycycle, car, motorbike, bus, truck고 차일때만 데이터로 활용할 것이기 때문에 다른 객체는 걸러냄.
                         if classids[i] == 1 or classids[i] == 2 or classids[i] == 3 or classids[i] == 5 or classids[i] == 7:
+
+                            # 현재 차선 (제일 바깥쪽 for문에서 탐색중인 차선)에 차량이 포함되어있는지 판단하는 함수
+                            # cv.pointPolygonTest는 첫번째 매개변수(다각형)안에 두번째 매개변수(점)가 포함되어 있는지 판단함.
+                            # 정확히 기억이 안나는데 return값이 0보다 크면 포함된다는거같음. 자세한건 opencv도큐먼트 확인할것
                             inside_ldtc = cv.pointPolygonTest(ldtc, (boxes[i][4], boxes[i][5]), True)
-                            # 순서대로 bycycle, car, motorbike, bus, truck
+
+                            # 현재 차선에 현재 탐색중인 차량이 있다면
                             if inside_ldtc >= 0:
-                                last_data = car_in_lane[j]
+                                # 차선별 차량 대기열 변수에 현재 차량을 추가함
                                 car_in_lane[j].append((classids[i], boxes[i][4], boxes[i][5]))
+
                             # print(j,i)
                             # print(boxes)
                             # print(self.counter)
+
+                            # 바로 위의 insite_ldtc와 같은 방법으로 counter안에 차량이 있는지 판단
+                            # 그리고 그 아래는 카운팅존에서 나갈때 +1카운트 하기 위한 알고리즘임
                             inside_counter = cv.pointPolygonTest(self.counter[j], (boxes[i][4], boxes[i][5]), True)
                             if inside_counter >= 0:
                                 lane_flag=True
@@ -165,6 +189,7 @@ class Detector:
                                     if self.car_in_lane_counter[j]==1:
                                         self.count_flag = True
 
+                    # 인식한 차량을 frame image에 덮어 그리는것
                     cv.circle(frame, (boxes[i][4], boxes[i][5]), 4,color,2)
                     # Draw the bounding box rectangle and label on the image
                     cv.rectangle(frame, (x, y), (x + w, y + h), color, 2)
@@ -172,6 +197,7 @@ class Detector:
                     cv.putText(frame, text, (x, y - 5), cv.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
 
                 if infer:
+                    # 여기도 차량을 카운팅하기 위한 알고리즘
                     if not lane_flag:
                         if self.car_in_lane_counter[j] > 0:
                             self.car_in_lane_counter[j] -= 1
