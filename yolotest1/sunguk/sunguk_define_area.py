@@ -30,18 +30,20 @@ elif FLAGS.stream:
 
 ret, image = cap.read()
 
-fig, ax = plt.subplots()
-plt.subplots_adjust(left=0.25, bottom=0.25)
+fig, ax = plt.subplots() # fig는 전체 사이즈, ax 는각각의 서브플롯
+plt.subplots_adjust(left=0.25, bottom=0.25)  #cap이 그려질 그래프 위치 조정
 
-axcolor = 'aliceblue'
+axcolor = 'aliceblue'   # 컬러 설정
 
-rax = plt.axes([0.025, 0.5, 0.15, 0.15])
+rax = plt.axes([0.025, 0.5, 0.15, 0.15])   # 좌측 라디오 버튼 박스의 위치와 크기를 지정
 radio = RadioButtons(rax, ('dtc', 'ldtc', 'counter'), active=0)
 
-resetax = plt.axes([0.8, 0.025, 0.1, 0.04])  # 리셋버튼 영역
+resetax = plt.axes([0.8, 0.025, 0.1, 0.05])  # send 버튼 박스의 위치와 크기를 지정
 button = Button(resetax, 'send', color=axcolor, hovercolor='0.5')
 
 type="dtc"
+
+
 def reset(event):
     global lines
     if lines[-1]==[]:
@@ -59,12 +61,15 @@ def reset(event):
     print("headers : ",headers)
     print("data : ",data)
     response = requests.post(url, headers=headers, data=json.dumps(data))
+
+
 def select(event):
     global type
     type = event
 
-button.on_clicked(reset)
-radio.on_clicked(select)
+button.on_clicked(reset)   # send 버튼 클릭시 reset 함수 실행
+
+radio.on_clicked(select)   #radio버튼 클릭시 select 함수 실행 type 변경
 
 line=[]
 ax.imshow(image)
@@ -75,29 +80,29 @@ lines=[]
 def onclick(event):
     if not event.xdata or event.xdata < 1 or event.ydata < 1:
         return
-    if event.button == 1:
+    if event.button == 1:   # 마우스 좌클릭시
         if len(lines)==0:
             lines.append([])
-        lines[-1].append([int(event.xdata),int(event.ydata)])
-        print("lines : ",lines)
-        print("type : ", type)
+        lines[-1].append([int(event.xdata),int(event.ydata)])   # lines에 append해주고
+        print("lines : ",lines)            # 출력한다
+        print("type : ", type)             # 타입도
         lc = LineCollection(lines, color="green", linewidths=1.5)
         lcs.append(lc)
         ax.add_collection(lc)
-        plt.draw()
+        plt.draw()          # 라인그리는내용인듯
 
         print(lines)
 
         print(event.xdata, event.ydata)
-        x = int(np.round(event.xdata))
+        print("--------------------------------------------------------------------------")
+        x = int(np.round(event.xdata))           # np.round  반올림함수
         y = int(np.round(event.ydata))
-        points.append([x,y])
+        points.append([x,y])              # points에도 x,y 값좌표를 넣어준다
     elif event.button==2:
         print("Result = np.array(",points,")")
         del points[:]
-    elif event.button==3:
-        lines[-1].append(lines[-1][0])
-
+    elif event.button==3:               # 마우스 우클릭시 lines 마지막 값을
+        lines[-1].append(lines[-1][0])         #lines 첫값이랑 동일하게 해준다  왜냐하면, 다각형좌표 를완성하기 위해
         lc = LineCollection(lines, color="green", linewidths=2)
         ax.add_collection(lc)
         #del lines[:]
