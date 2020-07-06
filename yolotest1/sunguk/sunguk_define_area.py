@@ -15,7 +15,7 @@ parser.add_argument('-f', '--file',
                     type=str)
 parser.add_argument('-p', '--path',
                     type=str,
-                    default='./picture/')
+                    default='../picture/')
 parser.add_argument('-st', '--stream',
                     type=str)
 parser.add_argument('-r', '--road-number',
@@ -56,7 +56,7 @@ def reset(event):
         url = 'http://35.224.46.11:80/rest/setCounter.json'
         data={"rno":FLAGS.road_number,"counter":lines}
     else:
-        url = 'http://35.224.46.11:80/rest/setLdtc.json'
+        url = 'http://35.224.46.1 1:80/rest/setLdtc.json'
         data = {"rno": FLAGS.road_number, "ldtc": lines}
     print("headers : ",headers)
     print("data : ",data)

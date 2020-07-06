@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
 		# cpu로 실행하면 속도 보장이 안되서
 		# infer_cycle 프레임당 1번씩 객체인식하게끔 함
-		# infer=Falce가 들어가면 객체인식은 하지 않고 전 프레임의 정보(box,count등)를 반환함
+		# infer=False가 들어가면 객체인식은 하지 않고 전 프레임의 정보(box,count등)를 반환함
 		if count == 0:
 			frame = detector.infer_image(frame)
 			count += 1

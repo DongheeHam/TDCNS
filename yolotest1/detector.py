@@ -3,7 +3,7 @@ import cv2 as cv
 import time
 
 class Detector:
-    def __init__(self, net, layer_names, FLAGS, dtc, ldtcs,counter, labels,\
+    def __init__(self, net, layer_names, FLAGS, dtc, ldtcs, counter, labels,\
                  sizecut, height=None, width=None):
         self.net = net
         self.layer_names = layer_names
@@ -64,7 +64,7 @@ class Detector:
 
             # 걸린시간 출력
             if self.FLAGS.show_time:
-                print("[INFO] YOLOv3 took {:6f} seconds".format(end - start))
+                print("[INFO]n YOLOv3 took {:6f} seconds".format(end - start))
 
             # boxes, confidences, and classIDs 생성
             boxes, confidences, classids = self.generate_boxes_confidences_classids(outs)
@@ -226,7 +226,7 @@ class Detector:
             cv.putText(frame, car_in_lane_text, (10, 20 + (i * 20)), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
 
             # 카운트 출력
-            car_in_lane_text_+=f"lane {i+1} [ big :{self.lane_count[i][0]}, small : {self.lane_count[i][1]} ]| "
+            car_in_lane_text_ += f"lane {i+1} [ big :{self.lane_count[i][0]}, small : {self.lane_count[i][1]} ]| "
 
         cv.putText(frame, car_in_lane_text_, (10, 100), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
 

@@ -7,7 +7,7 @@ class DataProcessing:
     def __init__(self, detector, road_number):
         self.detector = detector
         self.road_number = road_number
-        self.counting_flag=True
+        self.counting_flag = True
 
     # def run_counting(self):
     #     print(f"run_counting!{datetime.today().hour}:{datetime.today().minute}:{datetime.today().second}")
