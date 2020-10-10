@@ -14,8 +14,8 @@ class DataProcessing:
 
     def run_counting(self):
         print(f"run_counting!{datetime.today().hour}:{datetime.today().minute}:{datetime.today().second}")
-        csvfile=open(f"data_storage/({self.road_number}){datetime.today().strftime('%Y_%m_%d')}.csv",'a',newline="")
-        writer=csv.writer(csvfile)
+        #csvfile=open(f"data_storage/({self.road_number}){datetime.today().strftime('%Y_%m_%d')}.csv",'a',newline="")
+        #writer=csv.writer(csvfile)
         hour=datetime.today().hour
         minute=datetime.today().minute-(datetime.today().minute%5) # 매 5분단위로 내림. ex(8->5, 24->20)
         headers = {'Content-Type': 'application/json; charset=utf-8'}

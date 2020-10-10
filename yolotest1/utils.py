@@ -94,7 +94,7 @@ def parse():
 
     parser.add_argument('-c', '--confidence',
                         type=float,
-                        default=0.45,
+                        default=0.35,
                         help='The model will reject boundaries which has a \
     				probabiity less than the confidence value. \
     				default: 0.5')
