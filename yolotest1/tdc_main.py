@@ -19,8 +19,10 @@ if __name__ == '__main__':
 
 	# 사전 학습된 yolov3모델을 형성하기 위한 weight, cfg 파일 로드
 	net = cv.dnn.readNetFromDarknet(FLAGS.config, FLAGS.weights)
-	net.setPreferableTarget(cv.dnn.DNN_TARGET_OPENCL)
+	#net.setPreferableTarget(cv.dnn.DNN_TARGET_OPENCL)
 
+	net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
+	net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
 	# 모델의 출력 계층 이름 가져오기
 	layer_names = net.getLayerNames()
 	layer_names = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]

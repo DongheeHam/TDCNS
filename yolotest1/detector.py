@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 import time
+import sys
 
 class Detector:
     def __init__(self, net, layer_names, FLAGS, dtc, ldtcs, counter, labels,\
@@ -242,4 +243,6 @@ class Detector:
         # for aCounter in self.counter:
         #     cv.polylines(frame, [aCounter], True, (0, 255, 0), 1)
 
-        cv.imshow('video', frame)
+        #cv.imshow('video', frame)
+        #sys.stdout.write(frame.tostring())
+        sys.stdout.buffer.write(frame.tobytes())

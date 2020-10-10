@@ -20,15 +20,21 @@ parser.add_argument('-st', '--stream',
                     type=str)
 parser.add_argument('-r', '--road-number',
                     type=int)
-FLAGS, unparsed = parser.parse_known_args()
-
-if FLAGS.file:
-    cap = cv.VideoCapture(FLAGS.path + FLAGS.file)
-elif FLAGS.stream:
-    cap = cv.VideoCapture(FLAGS.stream)
+FLAGS_, unparsed = parser.parse_known_args()
+#-st를 -r만 받고 r로 서버에서 받아오기
+rno=input("진입로의 고유번호(rno)를 입력하세요 : ")
+response = requests.post("http://35.224.46.11:80/rest/getRoad.json?rno="+rno, headers={'Content-Type': 'application/json; charset=utf-8'})
+print(response)
+stream=json.loads(response.text)['result']['stream']
+# if FLAGS.file:
+#     cap = cv.VideoCapture(FLAGS.path + FLAGS.file)
+# elif FLAGS.stream:
+#     cap = cv.VideoCapture(FLAGS.stream)
+cap = cv.VideoCapture(stream)
 
 
 ret, image = cap.read()
+image=cv.cvtColor(image, cv.COLOR_BGR2RGB)
 
 fig, ax = plt.subplots()
 plt.subplots_adjust(left=0.25, bottom=0.25)
@@ -49,13 +55,16 @@ def reset(event):
     headers = {'Content-Type': 'application/json; charset=utf-8'}
     if type=="dtc":
         url='http://35.224.46.11:80/rest/setDtc.json'
-        data={"rno":FLAGS.road_number,"dtc":lines[0]}
+        #data={"rno":FLAGS.road_number,"dtc":lines[0]}
+        data = {"rno": rno, "dtc": lines[0]}
     elif type=='counter':
         url = 'http://35.224.46.11:80/rest/setCounter.json'
-        data={"rno":FLAGS.road_number,"counter":lines}
+        #data={"rno":FLAGS.road_number,"counter":lines}
+        data = {"rno": rno, "counter": lines}
     else:
         url = 'http://35.224.46.11:80/rest/setLdtc.json'
-        data = {"rno": FLAGS.road_number, "ldtc": lines}
+        #data = {"rno": FLAGS.road_number, "ldtc": lines}
+        data = {"rno": rno, "ldtc": lines}
     print("headers : ",headers)
     print("data : ",data)
     response = requests.post(url, headers=headers, data=json.dumps(data))
