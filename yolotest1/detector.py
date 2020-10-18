@@ -212,13 +212,13 @@ class Detector:
                 counter_color=(0,255,0)
                 if self.car_in_lane_counter[j] >0:
                     counter_color = (0, 0, 255)
-                cv.polylines(frame, [self.counter[j]], True, counter_color, 1)
+                cv.polylines(frame, [self.counter[j]], True, counter_color, 2)
         else:
             # print(len(self.ldtcs))
             # print(len(self.counter))
             for j, ldtc in enumerate(self.counter, 0):
                 counter_color = (0, 255, 0)
-                cv.polylines(frame, [self.counter[j]], True, counter_color, 1)
+                cv.polylines(frame, [self.counter[j]], True, counter_color, 2)
 
         # 대기열 텍스트 출력
         car_in_lane_text_ = ""
@@ -235,7 +235,7 @@ class Detector:
 
     def show(self, frame):
         # dtc 그리기
-        cv.polylines(frame, [self.dtc], True, (255, 0, 0), 1)
+        cv.polylines(frame, [self.dtc], True, (255, 0, 0), 2)
 
         # ldtc 그리기
         #for ldtc in self.ldtcs:
@@ -246,3 +246,14 @@ class Detector:
         cv.imshow('video', frame)
         #sys.stdout.write(frame.tostring())
         #sys.stdout.buffer.write(frame.tobytes())
+
+    def drowLines(self, frame):
+        # dtc 그리기
+        cv.polylines(frame, [self.dtc], True, (255, 0, 0), 2)
+
+        # ldtc 그리기
+        # for ldtc in self.ldtcs:
+        #    cv.polylines(frame, [ldtc], True, (0, 255, 0), 1)
+        # for aCounter in self.counter:
+        #     cv.polylines(frame, [aCounter], True, (0, 255, 0), 1)
+        return frame

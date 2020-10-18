@@ -71,6 +71,10 @@ def parse():
 
     parser.add_argument('-p', '--path',
                         type=str, default="./picture/")
+    parser.add_argument('-ho', '--host',
+                        type=str, default="0.0.0.0")
+    parser.add_argument('-po', '--port',
+                        type=str, default="8081")
 
     parser.add_argument('-st', '--stream-path',
                         type=str,
@@ -94,7 +98,7 @@ def parse():
 
     parser.add_argument('-c', '--confidence',
                         type=float,
-                        default=0.35,
+                        default=0.4,
                         help='The model will reject boundaries which has a \
     				probabiity less than the confidence value. \
     				default: 0.5')
